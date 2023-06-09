@@ -1,0 +1,61 @@
+Linux System Info
+=================
+
+Machine: DESKTOP-1MLA50M
+system: ubuntu in windows 10
+user: mza
+pass: zahangir 
+
+
+Run Feast (v0.31.1) on Windows 10 without Docker
+================================================================
+Ref: https://docs.feast.dev/getting-started/quickstart
+
+A) Pre-requsite with WLS in Windows 10
+-------------------------------------
+1. Open Microsoft Store, search for "Ubuntu", install it then restart
+2. Open cmd and type "wsl"
+3. Update everything using following commands 
+
+	sudo apt update && sudo apt upgrade
+
+4. Install "pip3" like following commands 
+
+	sudo apt-get install software-properties-common
+	sudo apt-add-repository universe
+	sudo apt-get update
+	sudo apt-get install python3-pip
+
+B) Install and running Feast
+----------------------------- 
+Step 1): Install Feast
+
+	pip3 install feast
+	
+Note: During installations it shows the following error which may need to fix
+	ERROR: connexion 2.14.2 has requirement werkzeug<2.3,>=1.0, but you'll have werkzeug 2.3.4 which is incompatible.
+
+
+Step 2): Create a feature repository
+	feast init my_project
+	cd my_project/feature_repo
+	
+Let's take a look at the resulting demo repo itself. It breaks down into
+(i) 'data/' contains raw demo parquet data
+(ii) 'example_repo.py' contains demo feature definitions
+(iii) 'feature_store.yaml' contains a demo setup configuring where data sources are
+(iv) 'test_workflow.py' showcases how to run all key Feast commands, including defining, retrieving, and pushing features. You can run this with python test_workflow.py.
+
+ 
+Step 3) : Run sample workflow
+There's an included 'test_workflow.py' file which runs through a full sample workflow:
+(i) Register feature definitions through feast apply
+(ii) Generate a training dataset (using get_historical_features)
+(iii) Generate features for batch scoring (using get_historical_features)
+(iv) Ingest batch features into an online store (using materialize_incremental)
+(v) Fetch online features to power real time inference (using get_online_features)
+(vi) Ingest streaming features into offline / online stores (using push)
+(vii) Verify online features are updated / fresher
+
+	
+	

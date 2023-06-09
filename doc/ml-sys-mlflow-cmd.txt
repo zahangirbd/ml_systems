@@ -1,0 +1,122 @@
+Linux System Info
+=================
+
+Machine: DESKTOP-1MLA50M
+system: ubuntu in windows 10
+user: mza
+pass: zahangir 
+
+
+Run Feast (v2.4.0) on Windows 10 without Docker
+===================================================
+Ref: https://mlflow.org/docs/latest/quickstart.html
+
+A) Pre-requsite with WLS in Windows 10
+-------------------------------------
+1. Open Microsoft Store, search for "Ubuntu", install it then restart
+2. Open cmd and type "wsl"
+3. Update everything using following commands 
+
+	sudo apt update && sudo apt upgrade
+
+4. Install "pip3" like following commands 
+
+	sudo apt-get install software-properties-common
+	sudo apt-add-repository universe
+	sudo apt-get update
+	sudo apt-get install python3-pip
+
+B) Install and running MLflow
+----------------------------- 
+Step 1): Install MLflow
+
+	pip3 install mlflow
+	
+Step 2): Create a ML model, e.g., sample_rf.py, with mlflow.autolog(), example is given at https://mlflow.org/docs/latest/quickstart.html 
+	cd ml_models/
+	python3 sample_rf.py
+	
+After run, you will see the a folder called 'mlruns' wich contains ML running tracks.
+ 
+Step 3): Run MLflow
+	mlflow ui
+
+You will be able to browse the UI using  http://127.0.0.1:5000
+
+Notes: 
+	- The above command will run MLflow as local using file base local store
+	- Locally, MLflow stores tracking data and artifacts in an mlruns/ subdirectory of where you ran the code. 
+	  The tracking UI, when run locally, visualizes this.
+
+
+
+Step 3): Run MLflow as server
+You may also store your data remotely. 
+You can track your runs with a tracking server, on a shared filesystem, with a SQLAlchemy-compatible database, or in a Databricks workspace. To do so:
+
+	- Call mlflow.set_tracking_uri in your code; or
+	- Set the MLFLOW_TRACKING_URI environment variable
+
+A tracking server is a lightweight HTTP server built in to MLflow. 
+(go to target folder, cd /mnt/d/ml-projects/ml_systems/mlflow/ml-models)
+You can run a tracking server on a network-accessible server by running:
+Shell:
+	mlflow server
+	
+
+For instance, if you’ve run the above command on a machine with IP address 192.168.0.1 and port 5000, 
+you can add tracking data to it either by:
+
+Python:
+	mlflow.set_tracking_uri("http://192.168.0.1:5000")
+	mlflow.autolog()  # Or other tracking functions
+
+	Or, on your development machine, 
+	you can set the MLFLOW_TRACKING_URI environment variable to the URL of that server:
+Shell:
+	export MLFLOW_TRACKING_URI=http://192.168.0.1:5000
+
+
+
+C) Registering a model after comparison
+-------------------------------------
+1) From UI, we can compare and register a model, e.g., with name 'Diabetes_best',
+2) After registering the model, we can make the registered model for Staging, Production etc. 
+
+3) We can serve the registered model using following command 
+	(go to target folder, cd /mnt/d/ml-projects/ml_systems/mlflow/ml-models)
+	
+	mlflow models serve -m "models:/Diabetes_best/Staging" --port 5002
+	
+Found an error like following:
+	ERROR: databricks-cli 0.17.7 has requirement urllib3<2.0.0,>=1.26.7, but you'll have urllib3 2.0.3 which is incompatible.
+	
+3) To test the model, you can send a request to the REST API using the curl command:
+
+	curl -d '{"dataframe_split": {
+	"columns": ["age", "sex", "bmi", "bp", "s1", "s2", "s3", "s4", "s5", "s6"],
+	"data": [[3.444336798240359848e-02,5.068011873981861926e-02,-1.894705840283900837e-03,-1.255612424445591221e-02,3.833367306762126142e-02,1.371724873967895830e-02,7.809320188284415987e-02,-3.949338287409329129e-02,4.547695772676123641e-03,-9.634615654165845644e-02]]}}' \
+	-H 'Content-Type: application/json' -X POST 127.0.0.1:5002/invocations
+
+D) Making docker with a specific version of the model
+---------------------------------------------------
+1)  You can use MLflow to build a Docker image for your model.
+
+	mlflow models build-docker --model-uri "models:/Diabetes_best/1" --name "diabetes_mlops"
+	
+This command builds a Docker image named qs_mlops that contains your model and its dependencies. 
+The model-uri in this case specifies a version number (/1) rather than a lifecycle stage (/staging), 
+but you can use whichever integrates best with your workflow. 
+
+2) Once it completes, you can run the image to provide real-time inferencing locally, on-prem, on a bespoke Internet server, 
+or cloud platform. You can run it locally with:
+	docker run -p 5002:8080 qs_mlops
+	
+3) This Docker run command runs the image you just built and maps port 5002 on your local machine to port 8080 in the container. 
+You can now send requests to the model using the same curl command as before:
+
+	curl -d '{"dataframe_split": {
+	"columns": ["age", "sex", "bmi", "bp", "s1", "s2", "s3", "s4", "s5", "s6"],
+	"data": [[3.444336798240359848e-02,5.068011873981861926e-02,-1.894705840283900837e-03,-1.255612424445591221e-02,3.833367306762126142e-02,1.371724873967895830e-02,7.809320188284415987e-02,-3.949338287409329129e-02,4.547695772676123641e-03,-9.634615654165845644e-02]]}}' \
+	-H 'Content-Type: application/json' -X POST 127.0.0.1:5002/invocations
+

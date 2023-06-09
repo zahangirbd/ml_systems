@@ -1,0 +1,47 @@
+How to install pyenv in ubunto
+=============================
+
+1) to update the system packages
+	sudo apt update -y
+	
+2)  install all Pyenv dependencies.
+	sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+	> libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
+	> libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+	
+3) clone from the Pyenv repository
+	git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+	
+4) add pyenv to our path so that the pyenv command is recognized globally.
+	echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+	echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+	echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+
+5) to start using pyenv, restart the shell
+
+6) Some useful commands of pyenv
+--------------------------------
+6.1) Check version
+	pyenv --version
+	
+6.2) To see the available python version
+	pyenv install --list
+
+6.3) For example, I will install python 3.9.15. So the command will be like this.
+	pyenv install 3.9.15
+	
+6.4) if the python version is already installed, you can use the:
+	pyenv versions
+
+And the result will look like this.
+	* system (set by /home/user/.pyenv/version)
+	  3.9.15 
+
+6.5) The * is mean that system is the default python version. To set python 3.9.15 as the default python, use the command:
+	pyenv global 3.9.15
+
+After that, check the python version.
+
+	python --version  # or python -V
+
+  
